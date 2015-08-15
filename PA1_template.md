@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
 
@@ -11,8 +6,8 @@ Show any code that is needed to
 
 1. Load the data (i.e. read.csv())
 
-```{r Prepare environment, echo=TRUE, error=FALSE, message=FALSE, warning=FALSE}
 
+```r
 ## Clear environment
 rm(list = ls())
 
@@ -44,8 +39,8 @@ library(scales)
 
 Note that any processing specific to a section is shown in that section -- for example, imputation of missing data is performed in the section entitled "Imputing missing values", etc. Only preliminary padding of the 'interval' field is shown here.
 
-```{r Preprocess data, echo=TRUE}
 
+```r
 ## Pad the the interval field with sufficient leading zeroes
 ## to include 4 digits.
 activity$interval <- sprintf("%04d", activity$interval)
@@ -59,19 +54,50 @@ Missing values in the dataset are explicitly *excluded* in this section.
 ### 1. Calculation of total number of steps taken per day
 Note: this data is available in dataframe 'act_C_byDate'. Only the summary and the first few observations in the dataframe are explicitly displayed here.
 
-```{r Total steps per day, echo=TRUE}
+
+```r
 ## Create new dataframe excluding NA values
 act_C_byDate <- activity %>% filter(complete.cases(activity[])) %>%
         group_by(date) %>% summarize(steps = sum(steps))
 
 summary(act_C_byDate)
+```
+
+```
+##       date                         steps      
+##  Min.   :2012-10-02 00:00:00   Min.   :   41  
+##  1st Qu.:2012-10-16 00:00:00   1st Qu.: 8841  
+##  Median :2012-10-29 00:00:00   Median :10765  
+##  Mean   :2012-10-30 17:12:27   Mean   :10766  
+##  3rd Qu.:2012-11-16 00:00:00   3rd Qu.:13294  
+##  Max.   :2012-11-29 00:00:00   Max.   :21194
+```
+
+```r
 act_C_byDate
+```
+
+```
+## Source: local data frame [53 x 2]
+## 
+##          date steps
+## 1  2012-10-02   126
+## 2  2012-10-03 11352
+## 3  2012-10-04 12116
+## 4  2012-10-05 13294
+## 5  2012-10-06 15420
+## 6  2012-10-07 11015
+## 7  2012-10-09 12811
+## 8  2012-10-10  9900
+## 9  2012-10-11 10304
+## 10 2012-10-12 17382
+## ..        ...   ...
 ```
 
 ### 2. Histogram of the total number of steps taken each day
 
-```{r Histogram of total steps taken per day, echo=TRUE}
 
+```r
 ggplot(data=act_C_byDate, aes(steps)) +
         scale_fill_gradient("Frequency", low = "lightgreen", high = "darkgreen") +
         geom_histogram(col="red", aes(fill = ..count..),
@@ -80,14 +106,28 @@ ggplot(data=act_C_byDate, aes(steps)) +
         labs(title = "Frequency of Total Steps per Day averaged\nacross all days (incomplete data excluded)")
 ```
 
+![](PA1_template_files/figure-html/Histogram of total steps taken per day-1.png) 
+
 
 ### 3. Mean and median of the total number of steps taken per day
 
 This information is available in the summry shown in (1.) above, but is explicitly generated here for clarity.
 
-```{r Calculate mean and median values, echo=TRUE}
+
+```r
 paste("Mean total steps per day = ", round(mean(act_C_byDate$steps)))
+```
+
+```
+## [1] "Mean total steps per day =  10766"
+```
+
+```r
 paste("Median total steps per day = ", median(act_C_byDate$steps))
+```
+
+```
+## [1] "Median total steps per day =  10765"
 ```
 
 
@@ -96,7 +136,8 @@ paste("Median total steps per day = ", median(act_C_byDate$steps))
 
 Note that the x-axis has been labelled by "Time of Day" rather than by "Interval" for the purpose of more intuitive comprehension.
 
-```{r Average Daily Activity, echo=TRUE}
+
+```r
 act_C_byItvl <- activity %>% filter(complete.cases(activity[])) %>%
         group_by(interval) %>% summarize(steps = round(mean(steps)))
 
@@ -118,13 +159,20 @@ ggplot(act_C_byItvl, aes(x = interval, y = steps)) +
         labs(title = "Average Total Steps by Time of Day (incomplete data excluded)")
 ```
 
+![](PA1_template_files/figure-html/Average Daily Activity-1.png) 
+
 
 ### 2. Determination of 5-minute interval, on average across all the days in the dataset, containing the maximum number of steps
 
-```{r Determine Interval with Maximum Average Activity, echo=TRUE}
+
+```r
 Itvl_Max_Activity <- act_C_byItvl$interval[which.max(act_C_byItvl$steps)]
 
 paste0("The 5-minute interval displaying the most activity is ", format(Itvl_Max_Activity, format = "%R", tz = ""))
+```
+
+```
+## [1] "The 5-minute interval displaying the most activity is 08:35"
 ```
 
 
@@ -134,12 +182,13 @@ Note that there are a number of days/intervals where there are missing values (c
 
 ### 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r Calculate Number of Missing Values, echo=TRUE}
+
+```r
 ## Determine the total number of missing values in the dataset
 incompleteObservations <- sum(!complete.cases(activity[]))
 ```
 
-The dataset contains `r incompleteObservations` incomplete observations.
+The dataset contains 2304 incomplete observations.
 
 ### 2. Strategy for filling in all of the missing values in the dataset.
 
@@ -147,7 +196,8 @@ The approach adopted is to populate any NA 'steps' entries for each interval wit
 
 ### 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r New dataset with imputed steps values, echo=TRUE}
+
+```r
 ## Create a new dataset that is equal to the original dataset but with
 ## the missing data filled in.
 act_F <- activity %>% group_by(interval) %>% mutate(steps = ifelse(is.na(steps),
@@ -158,7 +208,8 @@ act_F <- activity %>% group_by(interval) %>% mutate(steps = ifelse(is.na(steps),
 ### 4(a). Histogram of the total number of steps taken each day
 
 
-```{r Create activity histogram incorporating imputed data, echo=TRUE}
+
+```r
 act_F_byDate <-  act_F %>% group_by(date) %>% summarize(steps = sum(steps))
 ggplot(data=act_F_byDate, aes(steps)) +
         scale_fill_gradient("Frequency", low = "lightblue", high = "darkblue") +
@@ -167,17 +218,28 @@ ggplot(data=act_F_byDate, aes(steps)) +
                        breaks=seq(0, 25000, by = 1000)) +
         theme_minimal() + xlab("Total steps per day") + ylab("Frequency") +
         labs(title = "Frequency of Total Steps per Day (after imputation of missing data)")
-
-
 ```
+
+![](PA1_template_files/figure-html/Create activity histogram incorporating imputed data-1.png) 
 
 ### 4(b). Calculation of mean and median total number of steps taken per day
 
-```{r Mean and Median with imputed data, echo=TRUE}
+
+```r
 ## Calculate mean and median of total steps per day with dataset containg imputed data
 paste("Mean total steps per day = ", round(mean(act_F_byDate$steps)))
-paste("Median total steps per day = ", median(act_F_byDate$steps))
+```
 
+```
+## [1] "Mean total steps per day =  10766"
+```
+
+```r
+paste("Median total steps per day = ", median(act_F_byDate$steps))
+```
+
+```
+## [1] "Median total steps per day =  10762"
 ```
 
 It is evident from comparison of the plot (including imputed data) with the earlier histogram (excluding incomplete observations) that most if not all of the incomplete observations are in the 10000 - 11000 bin. Neither the mean nor the median has materially changed, and distribution of counts remains broadly unchanged.
@@ -195,7 +257,8 @@ This section utilizes the dataset with the filled-in missing values.
 
 ### 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r Create new factor variable, echo=TRUE}
+
+```r
 act_F_byDayType <- act_F %>% mutate(dayType = as.factor(ifelse(weekdays(date)
                 %in% c("Saturday", "Sunday"), "Weekend", "Weekday"))) %>%
         group_by(dayType, interval) %>%
@@ -204,7 +267,8 @@ act_F_byDayType <- act_F %>% mutate(dayType = as.factor(ifelse(weekdays(date)
 
 ### 2. Panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r Panel plot, echo=TRUE}
+
+```r
 hours <- substr(act_F_byDayType$interval, 1, 2)
 minutes <- substr(act_F_byDayType$interval, 3, 4)
 act_F_byDayType$interval <- paste0(hours, ":", minutes)
@@ -227,6 +291,8 @@ ggplot(act_F_byDayType, aes(x = interval,
         xlab("Time of day") +
         ylab("Average number of steps")
 ```
+
+![](PA1_template_files/figure-html/Panel plot-1.png) 
 
 
 
